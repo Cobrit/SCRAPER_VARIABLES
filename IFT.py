@@ -52,7 +52,7 @@ def ift_scraper():
         url_actual = driver.current_url
         
         # Ruta destino
-        ruta_destino = "C:/Users/DSTHREE/Downloads/IFT.pdf"
+        ruta_destino = "IFT.pdf"
         
         # Realiza la solicitud HTTP para descargar el archivo
         response=requests.get(url_actual)
@@ -66,7 +66,7 @@ def ift_scraper():
 
 
 def pdf_convert():
-    pdf_file = "C:/Users/DSTHREE/Downloads/IFT.pdf"
+    pdf_file = "IFT.pdf"
     
     # Abre el archivo PDF
     pdf_file = open(pdf_file, 'rb')
@@ -93,7 +93,7 @@ def pdf_convert():
     # Crea un DataFrame a partir de las líneas
     df = pd.DataFrame(lines, columns=['Texto'])
 
-    ruta_csv = "C:/Users/DSTHREE/Downloads/IFT.csv"    
+    ruta_csv = "IFT.csv"    
     df.to_csv(ruta_csv, index=False)
     return df
     
