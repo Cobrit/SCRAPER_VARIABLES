@@ -65,80 +65,83 @@ def ift_scraper():
     driver.quit()
 
 
-def pdf_convert():
-    pdf_file = "SHF.pdf"
-    
-    # Abre el archivo PDF
-    pdf_file = open(pdf_file, 'rb')
+    def pdf_convert():
+        pdf_file = "SHF.pdf"
+        
+        # Abre el archivo PDF
+        pdf_file = open(pdf_file, 'rb')
 
-    # Crea un objeto PdfFileReader para leer el PDF
-    pdf_reader = PyPDF2.PdfReader(pdf_file)
+        # Crea un objeto PdfFileReader para leer el PDF
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
 
-    # Inicializa una lista para almacenar el texto de cada página
-    page_texts = []
+        # Inicializa una lista para almacenar el texto de cada página
+        page_texts = []
 
-    # Itera a través de las páginas y extrae el texto
-    for page in pdf_reader.pages:
-        page_texts.append(page.extract_text())
+        # Itera a través de las páginas y extrae el texto
+        for page in pdf_reader.pages:
+            page_texts.append(page.extract_text())
 
-    # Cierra el archivo PDF
-    pdf_file.close()
+        # Cierra el archivo PDF
+        pdf_file.close()
 
-    # Combina el texto de todas las páginas en un solo texto
-    all_text = '\n'.join(page_texts)
+        # Combina el texto de todas las páginas en un solo texto
+        all_text = '\n'.join(page_texts)
 
-    # Divide el texto en líneas
-    lines = all_text.split('\n')
+        # Divide el texto en líneas
+        lines = all_text.split('\n')
 
-    # Crea un DataFrame a partir de las líneas
-    df = pd.DataFrame(lines, columns=['Texto'])
+        # Crea un DataFrame a partir de las líneas
+        df = pd.DataFrame(lines, columns=['Texto'])
 
-    ruta_csv = "SHF.csv"    
-    df.to_csv(ruta_csv, index=False)
-    return df
+        ruta_csv = "SHF.csv"    
+        df.to_csv(ruta_csv, index=False)
+        return df
 
-def extractor_tablas():
-    df = pd.read_csv("SHF.csv")
-    df = df.drop(df.index[48:])
-    # Reajusta el índice para que comience desde 0
-    df = df.reset_index(drop=True)
-    # Elimina la primera fila, que contiene el encabezado, y guarda el resultado en un nuevo DataFrame
-    df_sin_encabezado = df.iloc[1:].copy()
-    # Ahora puedes aplicar tu segundo código al DataFrame df_sin_encabezado
-    # Extrae la columna 'Valores'
-    df_sin_encabezado['Valores'] = df_sin_encabezado['Texto'].str.extract(r'(\d[\d. \s]+)')
-    # Dividir la columna 'Valores' en múltiples columnas usando espacios en blanco como separadores
-    columnas_valores = df_sin_encabezado['Valores'].str.split(expand=True)
-    # Eliminar filas que contienen valores NaN (en este caso, la fila que contiene "Na")
-    columnas_valores = columnas_valores.dropna()
-    column_names = df.iloc[0]
-    columnas_divididas = column_names.str.split(expand=True)
-    # Agrega una columna vacía llamada "Estado" al principio
-    columnas_divididas.insert(0, "Estado", "")
-    df_sin_encabezado['Estado'] = (df_sin_encabezado['Texto'].str.extract('([^0-9]+)'))
-    # Combina la columna 'Estado' de df_sin_encabezado con columnas_valores
-    columnas_valores.insert(0, 'Estado', df_sin_encabezado['Estado'].values)
-    print(columnas_valores)
-     # Acceder a la segunda columna por posición
-    segunda_columna = columnas_valores.iloc[:, 1]
-    # Lista de índices de filas a modificar 
-    filas_a_modificar = [1, 36, 37]
+    def extractor_tablas():
+        df = pd.read_csv("SHF.csv")
+        df = df.drop(df.index[48:])
+        # Reajusta el índice para que comience desde 0
+        df = df.reset_index(drop=True)
+        # Elimina la primera fila, que contiene el encabezado, y guarda el resultado en un nuevo DataFrame
+        df_sin_encabezado = df.iloc[1:].copy()
 
-    for fila_idx in filas_a_modificar:
-        # Modificar los valores de la segunda columna
-        segunda_columna.iloc[fila_idx] = str(segunda_columna.iloc[fila_idx])[1:]
+        # Extrae la columna 'Valores'
+        df_sin_encabezado['Valores'] = df_sin_encabezado['Texto'].str.extract(r'(\d[\d. \s]+)')
+        # Dividir la columna 'Valores' en múltiples columnas usando espacios en blanco como separadores
+        columnas_valores = df_sin_encabezado['Valores'].str.split(expand=True)
+        # Eliminar filas que contienen valores NaN (en este caso, la fila que contiene "Na")
+        columnas_valores = columnas_valores.dropna()
 
-    # Asignar los valores modificados de regreso a la segunda columna
-    columnas_valores.iloc[:, 1] = segunda_columna
-    # Asigna los nombres de las columnas desde columnas_divididas
-    columnas_valores.columns = columnas_divididas.iloc[0]
-    columnas_valores = columnas_valores.rename(columns={columnas_valores.columns[0]: 'Estado'})
+        df_sin_encabezado['Estado'] = (df_sin_encabezado['Texto'].str.extract('([^0-9]+)'))
+        # Combina la columna 'Estado' de df_sin_encabezado con columnas_valores
+        columnas_valores.insert(0, 'Estado', df_sin_encabezado['Estado'].values)
+        # Acceder a la segunda columna por posición
+        segunda_columna = columnas_valores.iloc[:, 1]
+        # Lista de índices de filas a modificar 
+        filas_a_modificar = [0, 33, 34]
+
+        for fila_idx in filas_a_modificar:
+            # Modificar los valores de la segunda columna
+            segunda_columna.iloc[fila_idx] = str(segunda_columna.iloc[fila_idx])[1:]
+
+        columnas_valores = columnas_valores.rename(columns={columnas_valores.columns[0]: 'Estado'})
 
 
-    # Guardar el DataFrame modificado en un archivo CSV
-    columnas_valores.to_csv("SHF_extract.csv", index=False)
+        #Obtener la longitud 
+        num_columnas = len(columnas_valores.columns)
+        # Crear una lista de años desde 2015 hasta 2024
+        years = range(2015, 2025)
+        # Crear una lista de números romanos del I al IV
+        romanos = ['I', 'II', 'III', 'IV']
+        # Crea una lista de nombres de columna basados en el patrón deseado
+        nombres_columnas = ["Estado"] + [f"{anno}-{romano}" for anno in years for romano in romanos]
+        # Asegurarse de que la lista de nombres de columna tenga la misma longitud que la tabla
+        nombres_columnas = nombres_columnas[:num_columnas]
+        columnas_valores.columns = nombres_columnas
+        # Guardar el DataFrame modificado en un archivo CSV
+        columnas_valores.to_csv("SHF_extract.csv", index=False)
 
+    pdf_convert()
+    extractor_tablas()
     
 ift_scraper()
-pdf_convert()
-extractor_tablas()
