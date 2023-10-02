@@ -22,6 +22,7 @@ def ift_scraper():
     "download.prompt_for_download": False,  # Desactiva la ventana emergente de descarga
     "download.directory_upgrade": True,
     "safebrowsing.enabled": False,  # Desactiva la verificación de seguridad de descargas
+    "download.default_directory":"C:/Users/DSTHREE/Documents/GITHUB/SCRAPER_VARIABLES"
 })
     # Configuración para ingresar al explorador
     driver = webdriver.Chrome(options = chrome_options)
